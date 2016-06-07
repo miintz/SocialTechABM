@@ -1,13 +1,17 @@
-class Agent
+public class Agent
 {
   int ID;
-  int PropertyLicense; //0 is geen property (kan een agent meerdere properties hebben?)
+  Product[] Products; // 0 is geen property (kan een agent meerdere properties hebben?)
   
-  int[] Relations; //relatie met de andere agents
+  //int[] Relations; 
   
-  Agent(int _id, int _PropertyLicense)
+  Agent(int _id, boolean _product)
   {
     ID = _id;
-    PropertyLicense = _PropertyLicense;
+    
+     if(_product)
+     {
+       Product p = new Product(SampleLicense);
+     }
   }
 }
