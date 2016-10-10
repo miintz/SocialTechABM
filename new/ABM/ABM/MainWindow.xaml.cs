@@ -30,12 +30,12 @@ namespace ABM
         int PublicSpaceComplexity; //variety in available data
         int GroupStrength; //strength of relations
         int CurrentAgent = 0;
-        int ProductIDer = 0;
-        int SampleLicense = 0;
+        public static int ProductIDer = 0;
+        public static int SampleLicense = 0;
 
         bool PrintInfo = true;
         bool ShowIDs = true;
-        
+
         List<Product> FinishedProducts = new List<Product>();
 
         public MainWindow()
@@ -58,6 +58,7 @@ namespace ABM
                 ProductAgents[j] = -1;
             }
 
+            MainCanvas.Children.Clear();
             Agents = new List<Agent>();
 
             for (int y = 0; y < ProductAgents.Count(); y++)
@@ -89,26 +90,27 @@ namespace ABM
             }
 
             float AngleFrag = (float)Math.PI * 2 / AgentCount;
+            Random ra = new Random();
             for (int i = 0; i < AgentCount; i++)
             {
                 float a = AngleFrag * i;
 
-                double x = (Width / 2) + (300 * Math.Cos(a));
-                double y = (Width / 2) + (300 * Math.Sin(a));
+                double x = (450 / 2) + (190 * Math.Cos(a));
+                double y = (450 / 2) + (190 * Math.Sin(a));
 
                 //fill(255);
 
                 //AGENT HIER TEKENENENENENENENE
                 //ellipse(x, y, 50 - (AgentCount / 2), 50 - (AgentCount / 2));
 
-                Agent age = new Agent(i, false);
-                
+                Agent age = new Agent(i, false, ra);
+
                 //assign products if number equals a different number
                 for (int n = 0; n < ProductAgents.Count(); n++)
                 {
                     if (i == ProductAgents[n])
                     {
-                        age = new Agent(i, true);
+                        age = new Agent(i, true, ra);
                         break;
                     }
                 }
@@ -120,8 +122,6 @@ namespace ABM
 
                 Agents.Add(age);
 
-                
-
                 if (ShowIDs)
                 {
                     //fill(0);
@@ -131,18 +131,19 @@ namespace ABM
                     //    textSize(12);
 
                     //text(i, x - 10, y + 5);
-                    //text("P: " + Agents.get(i).Products.size(), x - 10, y - 30);
+                    //text("P: " + Agents.get(i).Products.Count(), x - 10, y - 30);
                 }
             }
         }
 
         Product evaluateSourceLicense(Agent B, Agent A)
         {
+            Random rand = new Random();
+
             List<Product> Prods = B.Products;
 
-            Random rand = new Random();
-            //grab a random for now
-            Product source = Prods[(int)rand.Next(0, Prods.Count())];
+            //grab a rand.Next for now
+            Product source = Prods[rand.Next(0, Prods.Count())];
 
             int License = source.License;
             bool present = false;
@@ -151,14 +152,22 @@ namespace ABM
             switch (License)
             {
                 case 0: //Attribution
-                    int ne = (int)rand.Next(0, 5);
+                    int ne = rand.Next(0, 5);
                     np = new Product(ne, ProductIDer); //use whatever license
-                    np.Value = source.Value + (int)rand.Next(50, 150);
+                    np.Value = source.Value + rand.Next(50, 150);
+
+                    np.OriginAgent = source.OriginAgent;
+                    np.NameOfOriginAgent = source.NameOfOriginAgent;
+
                     ProductIDer++;
                     break;
                 case 1: //Attribution-ShareAlike
                     np = new Product(source.License, ProductIDer);
-                    np.Value = source.Value + (int)rand.Next(50, 150);
+                    np.Value = source.Value + rand.Next(50, 150);
+
+                    np.OriginAgent = source.OriginAgent;
+                    np.NameOfOriginAgent = source.NameOfOriginAgent;
+
                     ProductIDer++;
                     break;
                 case 2: //Attribution-NoDerivs
@@ -174,6 +183,7 @@ namespace ABM
                     {
                         np = new Product(source.License, source.ID);
                         np.Value = source.Value;
+                        ProductIDer++;
                     }
                     else
                     {
@@ -195,20 +205,34 @@ namespace ABM
                             {
                                 np = new Product(B.Products[p].License, B.Products[p].ID);
                                 np.Value = B.Products[p].Value;
+                                ProductIDer++;
+
                                 break;
                             }
                         }
+                    }
+
+                    if (np != null)
+                    {
+                        np.OriginAgent = source.OriginAgent;
+                        np.NameOfOriginAgent = source.NameOfOriginAgent;
                     }
                     break;
                 case 3: //Attribution-NonCommercial   
                     np = new Product(rand.Next(0, 5), ProductIDer); //use whatever license
                     np.Value = source.Value + rand.Next(50, 100); //iets minder value, 
                     ProductIDer++;
+
+                    np.OriginAgent = source.OriginAgent;
+                    np.NameOfOriginAgent = source.NameOfOriginAgent;
                     break;
                 case 4: //Attribution-NonCommercial-ShareAlike
                     np = new Product(source.License, ProductIDer);
                     np.Value = source.Value + rand.Next(50, 100); //iets minder value,
                     ProductIDer++;
+
+                    np.OriginAgent = source.OriginAgent;
+                    np.NameOfOriginAgent = source.NameOfOriginAgent;
                     break;
                 case 5: //Attribution-NonCommercial-NoDerivs
                     //check if this product is already in list of new agent
@@ -223,6 +247,7 @@ namespace ABM
                     {
                         np = new Product(source.License, source.ID);
                         np.Value = source.Value;
+                        ProductIDer++;
                     }
                     else
                     {
@@ -244,12 +269,17 @@ namespace ABM
                             {
                                 np = new Product(B.Products[p].License, B.Products[p].ID);
                                 np.Value = B.Products[p].Value;
+                                ProductIDer++;
+
                                 break;
                             }
                         }
                     }
                     break;
             }
+
+            if (np != null)
+                np.OriginProductID = source.ID;
 
             return np;
         }
@@ -266,14 +296,15 @@ namespace ABM
             }
 
             indices = Shuffle(indices);
-            
+
 
             return Agents[indices[0]];
         }
 
         private static Random rng = new Random();
         private bool SimulateNow;
-        
+        private List<string> Licenses;
+
         public List<int> Shuffle(List<int> list)
         {
             int n = list.Count();
@@ -316,21 +347,92 @@ namespace ABM
                 //make every agent take stuff from other agents
                 Agent A = Agents[i];
 
-                //hier moet dus een kans komen dat er verder word gewerkt aan iets wat bestaand
+                //paar mogelijkheden. 
+                /*
+                1. agent pakt een nieuw product
+                 2. agent werkt verder aan eigen product.
+                 */
 
-                //find product
-                Agent B = returnRandomAgentWithProduct(A.ID);
-                //println("Agent " + A.ID + " is takin " + B.ID + "s shit");
 
-                //evaluate license
-                Product P = evaluateSourceLicense(B, A);
-                if (P != null)
+                //30-70 in het voordeel van doorwerken
+                //is het sharealike? score hoger dan iets, kans van 25 dat de noderivs eraf gaat    
+                Random rand = new Random();
+                bool WorkOnOwnProduct = rand.Next(0, 100) > 70 ? true : false;
+                bool Default = !WorkOnOwnProduct;
+
+                if (WorkOnOwnProduct)
                 {
-                    A.Products.Add(P);
-                    NoProductsDispensed = false;
+                    //2. divergence (ratio van authors en het aantal producten)
+                    //2.1 op basis daarvan kijken of bepaalde agents het beter doen dan anderen (puur op basis van licentie) 
+                    //3. kans op ontwikkeling eigen product
+
+                    Product P = GetAgentOwnProduct(A);
+                    if (P != null)
+                    {
+                        P.Value += rand.Next(75, 150); //random score...
+                        System.Console.WriteLine("Agent " + A.Name + " worked on own product (ID: " + P.ID + " OID: " + P.OriginProductID + ") , new value: " + P.Value);
+
+                        if (P.Value > 750)
+                        {
+                            //waarom gebruiken mensen noderivs? Aan de ene kant om de ontwikkeling te beschermen, aan de andere kant om het resultaat te beschermen?
+                            if (P.License == 2 || P.License == 5)
+                            {
+                                //dit is dus in het geval dat de voortgang word beschermd, nu is die voortgang bij een punt dat het 'vrijgegeven' kan worden              
+                                bool ChangeLicense = rand.Next(0, 100) < 15 ? false : true;
+                                if (ChangeLicense)
+                                {
+                                    //nu is het noderivs. pak een andere 
+                                    List<int> li = new List<int>();
+
+                                    li.Add(0);
+                                    li.Add(1);
+                                    li.Add(3);
+                                    li.Add(4);
+
+                                    li = Shuffle(li);
+
+                                    P.License = li[0];
+
+                                    System.Console.WriteLine("... and changed license to: " + Licenses[P.License]);
+
+                                    //nu alle andere producten vinden die afkomstig van deze agent en ook de license veranderen
+                                    foreach (Agent B in Agents)
+                                    {
+                                        foreach (Product O in B.Products)
+                                        {
+                                            if (O.OriginProductID == P.OriginProductID)
+                                            {
+                                                O.License = P.License;
+                                                System.Console.WriteLine("... and " + B.Name + " thus changed product license of " + O.OriginProductID + " to " + Licenses[O.License]);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                        Default = true;
                 }
 
-                A.UpdateValue();
+                if (Default) //default action is new product
+                {
+                    //find product
+                    Agent B = returnRandomAgentWithProduct(A.ID); //param is prevent self.
+
+                    //evaluate license
+                    Product P = evaluateSourceLicense(B, A);
+                    if (P != null)
+                    {
+                        if (!ContainsProduct(P, A))
+                        {
+                            A.Products.Add(P);
+                            NoProductsDispensed = false;
+                        }
+                    }
+
+                    A.UpdateValue();
+                }
             }
 
             CurrentIteration++;
@@ -345,6 +447,29 @@ namespace ABM
 
                 // set complexity and also thing values
             }
+        }
+
+        Product GetAgentOwnProduct(Agent A) //dit returned altijd de eerste
+        {
+            foreach (Product P in A.Products)
+            {
+                if (P.OriginAgent == A.ID)
+                    return P;
+            }
+
+            return null;
+        }
+
+
+        private bool ContainsProduct(Product A, Agent B)
+        {
+              foreach (Product P in B.Products)
+              {
+                if (P.OriginProductID == A.OriginProductID)
+                  return true;
+              }
+
+              return false;
         }
 
         void draw()
@@ -362,7 +487,7 @@ namespace ABM
 
             //in labels dit en hierboven
             //if (SimulateNow)
-              //  text("Current iteration: " + CurrentIteration, 10, 40);
+            //  text("Current iteration: " + CurrentIteration, 10, 40);
 
             //text("Public space variety: " + PublicSpaceComplexity, 155, 40);
             //text("Finished products: " + FinishedProducts.Count(), 345, 40);
@@ -374,17 +499,39 @@ namespace ABM
 
             //fill(255);
 
-           
+
             //public space complexity, strokewidth
-           // strokeWeight(PublicSpaceComplexity);
-         //   fill(0, 0, 0, 0);
-           // ellipse(width / 2, height / 2, 900, 900);
+            // strokeWeight(PublicSpaceComplexity);
+            //   fill(0, 0, 0, 0);
+            // ellipse(width / 2, height / 2, 900, 900);
 
             //overal group strength
             //wat hier?
 
             //if (Simulate && frameCount % IterationTime == 0)
-              //  Simulate();
+            //  Simulate();
+        }
+
+        private void More(object sender, RoutedEventArgs e)
+        {
+            AgentCount++;
+            RepopAgents();
+        }
+
+        private void Less(object sender, RoutedEventArgs e)
+        {
+            AgentCount--;
+            RepopAgents();
+        }
+
+        private void Iterate(object sender, RoutedEventArgs e)
+        {
+            Simulate();
+        }
+
+        private void Reset(object sender, RoutedEventArgs e)
+        {
+            RepopAgents();
         }
 
     }

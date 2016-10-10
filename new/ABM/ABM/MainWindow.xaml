@@ -5,14 +5,19 @@
         Title="MainWindow" Height="750" Width="750">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition />
+            <ColumnDefinition Width="150" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        
+        
+        <Canvas x:Name="MainCanvas" Grid.Column="0" Grid.Row="0"/>
+        <Button Content="More" Click="More"  Grid.Column="1" HorizontalAlignment="Left" Margin="65,10,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button Content="Less" Click="Less"  Grid.Column="1" HorizontalAlignment="Left" Margin="65,35,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button Content="Iterate" Click="Iterate" Grid.Column="1" HorizontalAlignment="Left" Margin="65,228,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button Content="Reset" Click="Reset" Grid.Column="1" HorizontalAlignment="Left" Margin="65,60,0,0" VerticalAlignment="Top" Width="75"/>
 
-    <Canvas x:Name="MainCanvas" Grid.Column="0" Grid.Row="0" Height="750" Width="750">
-
-        </Canvas>
     </Grid>
 </Window>

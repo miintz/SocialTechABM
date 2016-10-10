@@ -8,18 +8,25 @@ namespace ABM
 {
     public class Product
     {
-        public int License;
-        private int ne;
-        private object ProductIDer;
-
-        public int Value;
         public int ID;
+        public int Value;
 
-        public Product(int ne, object ProductIDer)
+        public int License;
+
+        //product heeft een origin, wie is het werk begonnen
+        //de origin verand.Nexterd niet, elke license verplicht dat je de originator credit. 
+        public int OriginProductID;
+        public int OriginAgent;
+        public String NameOfOriginAgent;
+
+        public int[] Contributors;
+
+        public Product(int _l, int _id)
         {
             // TODO: Complete member initialization
-            this.ne = ne;
-            this.ProductIDer = ProductIDer;
+            License = _l;
+            Value = 500;
+            ID = _id;   
         }
     }
 }

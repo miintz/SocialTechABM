@@ -4,10 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="25" d:DesignWidth="25">
+             d:DesignHeight="50" d:DesignWidth="50">
     <Grid>
-        <Canvas x:Name="mainCanvas"> 
-            
+        
+        <Canvas x:Name="mainCanvas">
+            <Label Content="tetee"></Label>
         </Canvas>
     </Grid>
 </UserControl>
