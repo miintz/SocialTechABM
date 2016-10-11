@@ -22,7 +22,8 @@ namespace ABM
     {
         private int u;
         private bool p;
-        public List<Product> Products;
+        public List<Product> Products { get; set; }
+
         public int ID;
         private int TotalValue;
 
@@ -36,6 +37,8 @@ namespace ABM
 
         public Agent(int u, bool p, Random ra)
         {
+            ID = u; //??
+
             InitializeComponent();
 
             Products = new List<Product>();
@@ -73,22 +76,19 @@ namespace ABM
             int pp = ra.Next(AgentNames.Count() - 1);
             l.Content = AgentNames[pp];
 
-            myStackPanel.Children.Add(l);
-
-            this.Content = myStackPanel;
+            myStackPanel.Children.Add(l);            
 
             Label lp = new Label();
             lp.Name = "ProductLabel";
             lp.Content = "P: " + Products.Count();
-
+            
             myStackPanel.Children.Add(lp);
+
+            this.Content = myStackPanel;
 
             // TODO: Complete member initialization
             this.u = u;
             this.p = p;
-
-            Products = new List<Product>();
-
         }
 
         internal void UpdateValue()

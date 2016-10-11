@@ -42,6 +42,15 @@ namespace ABM
         {
             InitializeComponent();
 
+            Licenses = new List<string>();
+
+            Licenses.Add("Attribution");
+            Licenses.Add("Attribution-ShareAlike");
+            Licenses.Add("Attribution-NoDerivs");
+            Licenses.Add("Attribution-NonCommercial");
+            Licenses.Add("Attribution-NonCommercial-ShareAlike");
+            Licenses.Add("Attribution-NonCommercial-NoDerivs");
+
             RepopAgents();
         }
 
@@ -289,8 +298,9 @@ namespace ABM
             List<int> indices = new List<int>();
             for (int u = 0; u < Agents.Count(); u++)
             {
-                if (Agents[u].Products.Count() != 0 && Agents[u].ID != self)
+                if (Agents[u].Products.Count() != 0 && Agents[u].ID != self) 
                 {
+
                     indices.Add(u);
                 }
             }
@@ -330,7 +340,11 @@ namespace ABM
                     {
                         //throw in finished works
                         FinishedProducts.Add(Agents[y].Products[x]);
+                        lblFinishedProducts.Content = "Finished: " + FinishedProducts.Count;
                         Agents[y].Products.RemoveAt(x);
+                        
+                        var label = from r in ((StackPanel)Agents[y].Content).Children.OfType<Label>() where r.Name == "ProductLabel" select r; //lol lelijke code ahoy
+                        label.Take(1).ToList()[0].Content = "P: " + Agents[y].Products.Count;
                     }
                 }
             }
@@ -353,10 +367,10 @@ namespace ABM
                  2. agent werkt verder aan eigen product.
                  */
 
-
                 //30-70 in het voordeel van doorwerken
                 //is het sharealike? score hoger dan iets, kans van 25 dat de noderivs eraf gaat    
                 Random rand = new Random();
+
                 bool WorkOnOwnProduct = rand.Next(0, 100) > 70 ? true : false;
                 bool Default = !WorkOnOwnProduct;
 
@@ -366,7 +380,8 @@ namespace ABM
                     //2.1 op basis daarvan kijken of bepaalde agents het beter doen dan anderen (puur op basis van licentie) 
                     //3. kans op ontwikkeling eigen product
 
-                    Product P = GetAgentOwnProduct(A);
+                    //
+                    Product P = GetAgentOwnProduct(A); //instantie maar moet link zijn
                     if (P != null)
                     {
                         P.Value += rand.Next(75, 150); //random score...
@@ -427,6 +442,9 @@ namespace ABM
                         if (!ContainsProduct(P, A))
                         {
                             A.Products.Add(P);
+                            var label = from r in ((StackPanel)A.Content).Children.OfType<Label>() where r.Name == "ProductLabel" select r; //lol
+                            label.Take(1).ToList()[0].Content = "P: " + A.Products.Count;
+
                             NoProductsDispensed = false;
                         }
                     }
@@ -531,6 +549,26 @@ namespace ABM
 
         private void Reset(object sender, RoutedEventArgs e)
         {
+            RepopAgents();
+        }
+
+        private void Previous(object sender, RoutedEventArgs e)
+        {
+            if(SampleLicense != 0)
+                SampleLicense--;
+
+            lblLicense.Text = Licenses[SampleLicense];
+
+            RepopAgents();
+        }
+
+        private void Next(object sender, RoutedEventArgs e)
+        {
+            if (SampleLicense != Licenses.Count - 1)
+                SampleLicense++;
+
+            lblLicense.Text = Licenses[SampleLicense];
+
             RepopAgents();
         }
 

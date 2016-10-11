@@ -11,13 +11,17 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
-        
-        <Canvas x:Name="MainCanvas" Grid.Column="0" Grid.Row="0"/>
-        <Button Content="More" Click="More"  Grid.Column="1" HorizontalAlignment="Left" Margin="65,10,0,0" VerticalAlignment="Top" Width="75"/>
-        <Button Content="Less" Click="Less"  Grid.Column="1" HorizontalAlignment="Left" Margin="65,35,0,0" VerticalAlignment="Top" Width="75"/>
-        <Button Content="Iterate" Click="Iterate" Grid.Column="1" HorizontalAlignment="Left" Margin="65,228,0,0" VerticalAlignment="Top" Width="75"/>
-        <Button Content="Reset" Click="Reset" Grid.Column="1" HorizontalAlignment="Left" Margin="65,60,0,0" VerticalAlignment="Top" Width="75"/>
 
+        <Canvas x:Name="MainCanvas" Grid.Column="0" Grid.Row="0"/>
+        <Button Content="More" Click="More"  Grid.Column="1" HorizontalAlignment="Left" Margin="65,40,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button Content="Less" Click="Less"  Grid.Column="1" HorizontalAlignment="Left" Margin="65,65,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button Content="Iterate" Click="Iterate" Grid.Column="1" HorizontalAlignment="Left" Margin="65,419,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button Content="Reset" Click="Reset" Grid.Column="1" HorizontalAlignment="Left" Margin="65,90,0,0" VerticalAlignment="Top" Width="75"/>
+        <Label x:Name="lblFinishedProducts" Content="Finished: 0" Grid.Column="1" HorizontalAlignment="Left" Margin="74,639,0,0" VerticalAlignment="Top"/>
+        <TextBlock x:Name="lblLicense" Text="Attribution" TextWrapping="Wrap" Margin="5,665,10,0" VerticalAlignment="Top" Grid.Column="1"/>
+        <Label Content="Agent controls" Grid.Column="1" HorizontalAlignment="Left" Margin="55,10,0,0" VerticalAlignment="Top"/>
+        <Label Content="License controls" Grid.Column="1" HorizontalAlignment="Left" Margin="49,205,0,0" VerticalAlignment="Top"/>
+        <Button Click="Next" Content="Next" Grid.Column="1" HorizontalAlignment="Left" Margin="65,237,0,0" VerticalAlignment="Top" Width="75"/>
+        <Button Click="Previous" Content="Previous" Grid.Column="1" HorizontalAlignment="Left" Margin="65,262,0,0" VerticalAlignment="Top" Width="75"/>
     </Grid>
 </Window>
