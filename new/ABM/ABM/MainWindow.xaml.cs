@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using OxyPlot.Wpf;
+using OxyPlot;
 
 namespace ABM
 {
@@ -22,7 +24,7 @@ namespace ABM
     {
         private List<Agent> Agents;
 
-        int Iterations = 1; //well, iterations. 
+        int Iterations = 10; //well, iterations. 
         int CurrentIteration = 0;
         int IterationTime = 5; //frames
         int AgentCount = 8; //laten we simpel beginnen (ofzo)
@@ -36,6 +38,8 @@ namespace ABM
         bool PrintInfo = true;
         bool ShowIDs = true;
 
+        public string Title { get; private set; }
+        public IList<DataPoint> Points { get; private set; }
         List<Product> FinishedProducts = new List<Product>();
 
         public MainWindow()
@@ -50,6 +54,28 @@ namespace ABM
             Licenses.Add("Attribution-NonCommercial");
             Licenses.Add("Attribution-NonCommercial-ShareAlike");
             Licenses.Add("Attribution-NonCommercial-NoDerivs");
+            
+            DivergenceConvergencePlot.Title = "Convergence / divergence";
+            LineSeriesOne.ItemsSource = new List<DataPoint>
+            {
+                new DataPoint(0, 4),
+                new DataPoint(10, 13),
+                new DataPoint(20, 15),
+                new DataPoint(30, 16),
+                new DataPoint(40, 12),
+                new DataPoint(50, 12)
+            };
+
+            OtherPlot.Title = "Product contributors";
+            OtherLineSeries.ItemsSource = new List<DataPoint>
+            {
+                new DataPoint(0, 4),
+                new DataPoint(10, 13),
+                new DataPoint(20, 15),
+                new DataPoint(30, 16),
+                new DataPoint(40, 12),
+                new DataPoint(50, 12)
+            };
 
             RepopAgents();
         }
@@ -104,8 +130,8 @@ namespace ABM
             {
                 float a = AngleFrag * i;
 
-                double x = (450 / 2) + (190 * Math.Cos(a));
-                double y = (450 / 2) + (190 * Math.Sin(a));
+                double x = (550 / 2) + (250 * Math.Cos(a));
+                double y = (550 / 2) + (250 * Math.Sin(a));
 
                 //fill(255);
 
@@ -340,7 +366,7 @@ namespace ABM
                     {
                         //throw in finished works
                         FinishedProducts.Add(Agents[y].Products[x]);
-                        lblFinishedProducts.Content = "Finished: " + FinishedProducts.Count;
+                        lblFinishedProducts.Content = "Solved: " + FinishedProducts.Count;
                         Agents[y].Products.RemoveAt(x);
                         
                         var label = from r in ((StackPanel)Agents[y].Content).Children.OfType<Label>() where r.Name == "ProductLabel" select r; //lol lelijke code ahoy
@@ -353,7 +379,7 @@ namespace ABM
         void Simulate()
         {
             CheckForFinished();
-
+            
             bool NoProductsDispensed = true;
 
             for (int i = 0; i < AgentCount; i++)
@@ -545,6 +571,7 @@ namespace ABM
         private void Iterate(object sender, RoutedEventArgs e)
         {
             Simulate();
+            lblIteration.Content = "Iteration: " + CurrentIteration;
         }
 
         private void Reset(object sender, RoutedEventArgs e)
@@ -569,6 +596,23 @@ namespace ABM
 
             lblLicense.Text = Licenses[SampleLicense];
 
+            RepopAgents();
+        }
+
+        private void LessIterations(object sender, RoutedEventArgs e)
+        {
+            if (Iterations > 1)
+            {
+                Iterations--;
+                txtIterations.Text = Iterations + " iterations";
+                RepopAgents();
+            }
+        }
+
+        private void MoreIterations(object sender, RoutedEventArgs e)
+        {
+            Iterations++;
+            txtIterations.Text = Iterations + " iterations";
             RepopAgents();
         }
 
