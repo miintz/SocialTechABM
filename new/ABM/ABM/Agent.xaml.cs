@@ -60,6 +60,12 @@ namespace ABM
             myStackPanel.Children.Add(myEllipse);
             PopulateNames();
 
+
+            Label l = new Label();
+            int pp = ra.Next(AgentNames.Count() - 1);            
+            Name = AgentNames[pp];
+            l.Content = Name;
+         
             if (p)
             {
                 Product product = new Product(MainWindow.SampleLicense, MainWindow.ProductIDer);
@@ -72,9 +78,6 @@ namespace ABM
                 MainWindow.ProductIDer++;
             }
 
-            Label l = new Label();
-            int pp = ra.Next(AgentNames.Count() - 1);
-            l.Content = AgentNames[pp];
 
             myStackPanel.Children.Add(l);            
 
@@ -157,6 +160,8 @@ namespace ABM
             AgentNames.Add("Xander");
             AgentNames.Add("Yale");
             AgentNames.Add("Zack");
+
+            AgentNames.Add("PANIC");
         }
     }
 }

@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using OxyPlot.Wpf;
 using OxyPlot;
+using OxyPlot.Series;
 
 namespace ABM
 {
@@ -24,7 +25,7 @@ namespace ABM
     {
         private List<Agent> Agents;
 
-        int Iterations = 10; //well, iterations. 
+        int Iterations = 50; //well, iterations. 
         int CurrentIteration = 0;
         int IterationTime = 5; //frames
         int AgentCount = 8; //laten we simpel beginnen (ofzo)
@@ -42,6 +43,13 @@ namespace ABM
         public IList<DataPoint> Points { get; private set; }
         List<Product> FinishedProducts = new List<Product>();
 
+        List<List<ScatterPoint>> DivergenceConvergencePoints = new List<List<ScatterPoint>>();
+
+        OxyPlot.Wpf.ScatterSeries ActiveConvergenceSeries = new OxyPlot.Wpf.ScatterSeries();
+        List<Color> GeneratedColors = new List<Color>();
+
+        Color ActiveColor;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -55,29 +63,78 @@ namespace ABM
             Licenses.Add("Attribution-NonCommercial-ShareAlike");
             Licenses.Add("Attribution-NonCommercial-NoDerivs");
             
-            DivergenceConvergencePlot.Title = "Convergence / divergence";
-            LineSeriesOne.ItemsSource = new List<DataPoint>
-            {
-                new DataPoint(0, 4),
-                new DataPoint(10, 13),
-                new DataPoint(20, 15),
-                new DataPoint(30, 16),
-                new DataPoint(40, 12),
-                new DataPoint(50, 12)
-            };
-
-            OtherPlot.Title = "Product contributors";
-            OtherLineSeries.ItemsSource = new List<DataPoint>
-            {
-                new DataPoint(0, 4),
-                new DataPoint(10, 13),
-                new DataPoint(20, 15),
-                new DataPoint(30, 16),
-                new DataPoint(40, 12),
-                new DataPoint(50, 12)
-            };
-
+            DivergenceConvergencePlot.Title = "Convergence / divergence"; //veel producten / low value vs little products / high value                       
+       
+            num_colors = 350;
+            GenerateColors();
             RepopAgents();
+
+            CompileConvergentSeries();
+
+            DivergenceConvergencePlot.ActualModel.MouseDown += new EventHandler<OxyPlot.OxyMouseDownEventArgs>(plotModel_MouseDown);
+            DivergenceConvergencePlot.ActualModel.MouseUp += new EventHandler<OxyMouseEventArgs>(plotModel_MouseUp);
+        }
+
+        // event handler
+        void plotModel_MouseDown(object sender, OxyPlot.OxyMouseDownEventArgs e)       
+        {            
+            if (DivergenceConvergencePlot.Series.Any(p => p.GetType() == typeof(OxyPlot.Wpf.LineSeries)))
+            {
+                //  int l = DivergenceConvergencePlot.Series.Count;
+                var list = DivergenceConvergencePlot.Series.Where(p => p.GetType() != typeof(OxyPlot.Wpf.LineSeries)).ToList();
+
+                DivergenceConvergencePlot.Series.Clear();
+                list.ForEach(p => DivergenceConvergencePlot.Series.Add(p));
+
+                DivergenceConvergencePlot.InvalidatePlot();
+            }
+
+            try
+            {
+                ScatterPoint res = (ScatterPoint)e.HitTestResult.Item;
+
+                if (res != null)
+                {
+                    string ID = res.Tag.ToString();
+                    
+                    OxyPlot.Wpf.LineSeries tempseries = new OxyPlot.Wpf.LineSeries();
+                    List<DataPoint> points = new List<DataPoint>();
+
+                    //find all series with the ID
+                    foreach (OxyPlot.Wpf.ScatterSeries series in DivergenceConvergencePlot.Series)
+                    {
+                        if (series.Tag.ToString() == ID)
+                        {
+                            ScatterPoint point = (ScatterPoint)series.Items[0];
+
+                            points.Add(new DataPoint(point.X, point.Y));
+                            //contains single point
+                        }
+                    }
+
+                    tempseries.ItemsSource = points;                    
+                    DivergenceConvergencePlot.Series.Add(tempseries);
+
+                    DivergenceConvergencePlot.InvalidatePlot();
+                    
+                }
+            }
+            catch (Exception ex)
+            { }
+        }
+
+        void plotModel_MouseUp(object sender, OxyPlot.OxyMouseEventArgs e)
+        {
+            if (DivergenceConvergencePlot.Series.Any(p => p.GetType() == typeof(OxyPlot.Wpf.LineSeries)))
+            {
+                //  int l = DivergenceConvergencePlot.Series.Count;
+                var list = DivergenceConvergencePlot.Series.Where(p => p.GetType() != typeof(OxyPlot.Wpf.LineSeries)).ToList();
+
+                DivergenceConvergencePlot.Series.Clear();
+                list.ForEach(p => DivergenceConvergencePlot.Series.Add(p));
+
+                DivergenceConvergencePlot.InvalidatePlot();
+            }
         }
 
         public void RepopAgents()
@@ -169,6 +226,162 @@ namespace ABM
                     //text("P: " + Agents.get(i).Products.Count(), x - 10, y - 30);
                 }
             }
+        }
+
+        List<DataPoint> SolvedSeriesItems = new List<DataPoint>();
+
+        public void CompileSolvedProductSeries()
+        { 
+            SolvedSeriesItems.Add(new DataPoint(CurrentIteration, FinishedProducts.Count));
+            var t = new OxyPlot.Wpf.LineSeries();            
+            t.ItemsSource = SolvedSeriesItems;
+
+            SolvedProductsPlot.Series.Clear();
+            SolvedProductsPlot.Series.Add(t);
+
+            SolvedProductsPlot.InvalidatePlot();
+        }
+
+        public void CompileValueVsCountSeries()
+        {
+            int count = 0;
+            int value = 0;
+            foreach (Agent a in Agents)
+            {
+                foreach (Product p in a.Products)
+                {
+                    value += p.Value;
+                    count++;
+                }
+            }
+           
+            ValueSeries.ItemsSource = new List<BarItem>(new[]
+            {           
+                new BarItem{ Value = value }
+            });
+
+            CountSeries.ItemsSource = new List<BarItem>(new[]
+            {           
+                new BarItem{ Value = count }
+            });       
+        }
+
+        public void CompileConvergentSeries()
+        { 
+            //alle producten
+            /*
+             * y is waarde product
+             * x = aantal iteraties
+             */
+
+            foreach (Agent a in Agents)
+	        {
+                foreach (Product p in a.Products)
+                {
+                    ScatterPoint sca = new ScatterPoint(CurrentIteration, p.Value, 3.0, 10.0, p.ID);
+            
+                    var aa = new List<ScatterPoint>();                    
+                    aa.Add(sca);
+
+                    var series = new OxyPlot.Wpf.ScatterSeries { 
+                        TrackerFormatString = "X: " + CurrentIteration + Environment.NewLine + 
+                        "Y: " + p.Value + Environment.NewLine + 
+                        "PID: " + p.ID + Environment.NewLine + 
+                        "Agent: " + a.Name + Environment.NewLine +
+                        "Origin: " + p.NameOfOriginAgent + Environment.NewLine + 
+                        "Color: " + GeneratedColors[p.ID].ToString(),
+                        Color = GeneratedColors[p.ID], //de kleuren zijn steeds anders...
+                        MarkerFill = GeneratedColors[p.ID],
+                    };  
+
+                    DivergenceConvergencePlot.Series.Add(series);
+                    series.ItemsSource = aa;
+                    series.Tag = p.ID;
+                }
+	        }       
+     
+
+        }
+
+        public void GenerateColors()
+        {
+            Random r = new Random();
+            for (int i = 1; i < 360; i += 360 / num_colors)
+            {                
+                int hue = i;
+                double saturation = 90 + r.NextDouble() * 10;
+                double lightness = 50 + r.NextDouble() * 10;
+
+                //addColor(c);
+                GeneratedColors.Add(ColorFromHSL((double)hue, saturation, lightness));
+            }             
+        }
+
+        public Color ColorFromHSL(double Hue, double Saturation, double Luminosity)
+        {
+            byte r, g, b;
+            if (Saturation == 0)
+            {
+                r = (byte)Math.Round(Luminosity * 255d);
+                g = (byte)Math.Round(Luminosity * 255d);
+                b = (byte)Math.Round(Luminosity * 255d);
+            }
+            else
+            {
+                double t1, t2;
+                double th = Hue / 6.0d;
+
+                if (Luminosity < 0.5d)
+                {
+                    t2 = Luminosity * (1d + Saturation);
+                }
+                else
+                {
+                    t2 = (Luminosity + Saturation) - (Luminosity * Saturation);
+                }
+                t1 = 2d * Luminosity - t2;
+
+                double tr, tg, tb;
+                tr = th + (1.0d / 3.0d);
+                tg = th;
+                tb = th - (1.0d / 3.0d);
+
+                tr = ColorCalc(tr, t1, t2);
+                tg = ColorCalc(tg, t1, t2);
+                tb = ColorCalc(tb, t1, t2);
+                r = (byte)Math.Round(tr * 255d);
+                g = (byte)Math.Round(tg * 255d);
+                b = (byte)Math.Round(tb * 255d);
+            }
+
+            return Color.FromRgb(r, g, b);
+        }
+
+        private static double ColorCalc(double c, double t1, double t2)
+        {
+            if (c < 0) c += 1d;
+            if (c > 1) c -= 1d;
+            if (6.0d * c < 1.0d) return t1 + (t2 - t1) * 6.0d * c;
+            if (2.0d * c < 1.0d) return t2;
+            if (3.0d * c < 2.0d) return t1 + (t2 - t1) * (2.0d / 3.0d - c) * 6.0d;
+            return t1;
+        }
+
+        private double GetColorComponent(double temp1, double temp2, double temp3)
+        {
+            if (temp3 < 0.0)
+                temp3 += 1.0;
+            else if (temp3 > 1.0)
+                temp3 -= 1.0;
+
+            if (temp3 < 1.0 / 6.0)
+                return temp1 + (temp2 - temp1) * 6.0 * temp3;
+            else if (temp3 < 0.5)
+                return temp2;
+            else if (temp3 < 2.0 / 3.0)
+                return temp1 + ((temp2 - temp1) * ((2.0 / 3.0) - temp3) * 6.0);
+            else
+                return temp1;
         }
 
         Product evaluateSourceLicense(Agent B, Agent A)
@@ -340,6 +553,7 @@ namespace ABM
         private static Random rng = new Random();
         private bool SimulateNow;
         private List<string> Licenses;
+        private int num_colors;
 
         public List<int> Shuffle(List<int> list)
         {
@@ -484,13 +698,18 @@ namespace ABM
             if (NoProductsDispensed)
                 System.Console.WriteLine("No products were dispensed, end of test run / 100% convergence?");
 
-            if (CurrentIteration == Iterations)
-            {
-                SimulateNow = false;
-                CurrentIteration = 0;
+            //if (CurrentIteration == Iterations)
+            //{
+             //   SimulateNow = false;
+              //  CurrentIteration = 0;
 
                 // set complexity and also thing values
-            }
+            //}
+
+            CompileConvergentSeries();
+            CompileValueVsCountSeries();
+            CompileSolvedProductSeries();
+
         }
 
         Product GetAgentOwnProduct(Agent A) //dit returned altijd de eerste
@@ -576,6 +795,20 @@ namespace ABM
 
         private void Reset(object sender, RoutedEventArgs e)
         {
+            DivergenceConvergencePlot.Series.Clear();
+            DivergenceConvergencePlot.InvalidatePlot(); //force rerender
+
+            ValueSeries.ItemsSource = null;
+            ValueSeries.InvalidateVisual();
+
+            CountSeries.ItemsSource = null;
+            CountSeries.InvalidateVisual();
+
+            SolvedSeriesItems = new List<DataPoint>();
+            SolvedProductsPlot.Series.Clear();
+            SolvedProductsPlot.InvalidatePlot();
+
+            CurrentIteration = 0;
             RepopAgents();
         }
 

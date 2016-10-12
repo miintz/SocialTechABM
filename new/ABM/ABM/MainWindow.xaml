@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"        
         xmlns:local="clr-namespace:ABM" x:Class="ABM.MainWindow"
         xmlns:oxy="http://oxyplot.org/wpf" 
-        Title="MainWindow" Height="800" Width="1400">
+        Title="MainWindow" Height="900" Width="1600">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="600" />
@@ -22,30 +22,80 @@
         <Button Content="Less" Click="Less"  Grid.Column="1" HorizontalAlignment="Left" Margin="65,154,0,0" VerticalAlignment="Top" Width="75" Height="22"/>
         <Button Content="Iterate" Click="Iterate" Grid.Column="1" HorizontalAlignment="Left" Margin="65,374,0,0" VerticalAlignment="Top" Width="75" Height="22"/>
         <Button Content="Reset" Click="Reset" Grid.Column="1" HorizontalAlignment="Left" Margin="65,179,0,0" VerticalAlignment="Top" Width="75" Height="22"/>
-        <Label x:Name="lblFinishedProducts" Content="Solved: 0" Grid.Column="1" HorizontalAlignment="Left" Margin="0,586,0,0" VerticalAlignment="Top" Height="26" Width="58"/>
-        <Label x:Name="lblIteration" Content="Iteration: 0" Grid.Column="1" HorizontalAlignment="Left" Margin="0,612,0,0" VerticalAlignment="Top" Height="26" Width="67"/>
+        <Label x:Name="lblFinishedProducts" Content="Solved: 0" Grid.Column="1" HorizontalAlignment="Left" Margin="0,586,0,0" VerticalAlignment="Top" Height="26" Width="200"/>
+        <Label x:Name="lblIteration" Content="Iteration: 0" Grid.Column="1" HorizontalAlignment="Left" Margin="0,612,0,0" VerticalAlignment="Top" Height="26" Width="200"/>
         <TextBlock x:Name="lblLicense" Text="Attribution" TextWrapping="Wrap" Margin="10,10,5,0" VerticalAlignment="Top" Grid.Column="1" Height="16"/>
         <Label Content="Agent controls" Grid.Column="1" HorizontalAlignment="Left" Margin="5,99,0,0" VerticalAlignment="Top" Height="26" Width="88"/>
         <Label Content="License controls" Grid.Column="1" HorizontalAlignment="Left" Margin="5,206,0,0" VerticalAlignment="Top" Height="26" Width="94"/>
         <Button Click="Next" Content="Next" Grid.Column="1" HorizontalAlignment="Left" Margin="65,237,0,0" VerticalAlignment="Top" Width="75" Height="22"/>
         <Button Click="Previous" Content="Previous" Grid.Column="1" HorizontalAlignment="Left" Margin="65,262,0,0" VerticalAlignment="Top" Width="75" Height="22"/>
-        <TextBlock x:Name="txtIterations" Text="10 iterations" TextWrapping="Wrap" Margin="10,31,5,0" VerticalAlignment="Top" Grid.Column="1" Height="16"/>
+        <TextBlock x:Name="txtIterations" Text="50 iterations" TextWrapping="Wrap" Margin="10,31,5,0" VerticalAlignment="Top" Grid.Column="1" Height="16"/>
         <Label Content="Iteration controls" Grid.Column="1" HorizontalAlignment="Left" Margin="5,289,0,0" VerticalAlignment="Top" Height="26" Width="101"/>
         <Button Click="MoreIterations" Content="More" Grid.Column="1" HorizontalAlignment="Left" Margin="65,322,0,0" VerticalAlignment="Top" Width="75" Height="22"/>
         <Button Click="LessIterations" Content="Less" Grid.Column="1" HorizontalAlignment="Left" Margin="65,347,0,0" VerticalAlignment="Top" Width="75" Height="22"/>
 
         <GroupBox Grid.Column="2" Header="Plots" BorderThickness="2">
             <StackPanel Orientation="Vertical">
-                <oxy:Plot x:Name="DivergenceConvergencePlot" Height="379">
-                    <oxy:Plot.Series>
-                        <oxy:LineSeries x:Name="LineSeriesOne"/>
-                    </oxy:Plot.Series>
+                <oxy:Plot x:Name="DivergenceConvergencePlot" Height="420">
+                    <oxy:Plot.Axes>                        
+                        <oxy:LinearAxis Position="Left" Minimum="400" Maximum="1500" />
+                        
+                    </oxy:Plot.Axes>                    
                 </oxy:Plot>
-                <oxy:Plot x:Name="OtherPlot" Height="370" >
-                    <oxy:Plot.Series>
-                        <oxy:LineSeries x:Name="OtherLineSeries"/>
-                    </oxy:Plot.Series>
-                </oxy:Plot>
+                
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Grid Grid.Column="0">                        
+                       
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"></RowDefinition>
+                                <RowDefinition Height="*"></RowDefinition>
+                            </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <oxy:Plot Title="Solved Products" x:Name="SolvedProductsPlot" Height="420">
+                                <oxy:Plot.Series>
+                                    <oxy:LineSeries MarkerType="Circle" MarkerFill="Black" x:Name="SolvedSeries"></oxy:LineSeries>
+                                </oxy:Plot.Series>
+                            </oxy:Plot>
+                        </Grid>
+                    </Grid>
+
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <oxy:Plot Title="Total Product Value" x:Name="Value">
+                                <oxy:Plot.Series>
+                                        <oxy:BarSeries Title="Total Product Value" x:Name="ValueSeries"></oxy:BarSeries>
+                                    </oxy:Plot.Series>
+                            </oxy:Plot>
+                        </Grid>
+                        <Grid Grid.Row="1">
+                            <oxy:Plot Title="Total Product Count" x:Name="Count" >
+                                <oxy:Plot.Series>
+                                    <oxy:BarSeries Title="Total Product Count" x:Name="CountSeries"></oxy:BarSeries>
+                                </oxy:Plot.Series>
+                            </oxy:Plot>
+                        </Grid>
+                        <Grid Grid.Row="2">
+                            <oxy:Plot Title="Average Product Contributors" x:Name="AverageContrib" >
+                                <oxy:Plot.Series>
+                                    <oxy:LineSeries MarkerType="Circle" MarkerFill="Black" x:Name="AverageContribSeries"></oxy:LineSeries>
+                                </oxy:Plot.Series>
+                            </oxy:Plot>
+                        </Grid>
+                    </Grid>
+                    
+                
+                </Grid>
             </StackPanel>
         </GroupBox>
     </Grid>
