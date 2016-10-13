@@ -74,6 +74,8 @@ namespace ABM
                 product.NameOfOriginAgent = Name;
                 product.OriginProductID = MainWindow.ProductIDer;
 
+                product.Contributors.Add(ID);
+
                 Products.Add(product);
                 MainWindow.ProductIDer++;
             }

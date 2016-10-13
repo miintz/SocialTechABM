@@ -28,7 +28,7 @@ namespace ABM
         int Iterations = 50; //well, iterations. 
         int CurrentIteration = 0;
         int IterationTime = 5; //frames
-        int AgentCount = 8; //laten we simpel beginnen (ofzo)
+        int AgentCount = 30; //laten we simpel beginnen (ofzo)
         int AgentProductInit = 4; //number of agents that start with a product.
         int PublicSpaceComplexity; //variety in available data
         int GroupStrength; //strength of relations
@@ -229,6 +229,27 @@ namespace ABM
         }
 
         List<DataPoint> SolvedSeriesItems = new List<DataPoint>();
+        List<DataPoint> ContribItems = new List<DataPoint>();
+        public void CompileAverageContributorsSeries()
+        { 
+            int contribucount = 0;
+            Agents.ForEach(p => p.Products.ForEach(a => contribucount += a.Contributors.Count));
+
+            int pcount = 0;
+            Agents.ForEach(p => pcount += p.Products.Count);
+
+            contribucount /= pcount;
+
+            ContribItems.Add(new DataPoint(CurrentIteration, contribucount));
+
+            var t = new OxyPlot.Wpf.LineSeries();
+            t.ItemsSource = ContribItems;
+
+            AverageContrib.Series.Clear();
+            AverageContrib.Series.Add(t);
+
+            AverageContrib.InvalidatePlot();
+        }
 
         public void CompileSolvedProductSeries()
         { 
@@ -314,7 +335,37 @@ namespace ABM
 
                 //addColor(c);
                 GeneratedColors.Add(ColorFromHSL((double)hue, saturation, lightness));
-            }             
+            }
+            
+            for (int i = 1; i < 360; i += 360 / num_colors)
+            {
+                int hue = i;
+                double saturation = 90 + r.NextDouble() * 10;
+                double lightness = 50 + r.NextDouble() * 10;
+
+                //addColor(c);
+                GeneratedColors.Add(ColorFromHSL((double)hue, saturation, lightness));
+            }
+
+            for (int i = 1; i < 360; i += 360 / num_colors)
+            {
+                int hue = i;
+                double saturation = 90 + r.NextDouble() * 10;
+                double lightness = 50 + r.NextDouble() * 10;
+
+                //addColor(c);
+                GeneratedColors.Add(ColorFromHSL((double)hue, saturation, lightness));
+            }
+
+            for (int i = 1; i < 360; i += 360 / num_colors)
+            {
+                int hue = i;
+                double saturation = 90 + r.NextDouble() * 10;
+                double lightness = 50 + r.NextDouble() * 10;
+
+                //addColor(c);
+                GeneratedColors.Add(ColorFromHSL((double)hue, saturation, lightness));
+            }        
         }
 
         public Color ColorFromHSL(double Hue, double Saturation, double Luminosity)
@@ -396,7 +447,7 @@ namespace ABM
             int License = source.License;
             bool present = false;
             Product np = null;
-
+            
             switch (License)
             {
                 case 0: //Attribution
@@ -527,7 +578,12 @@ namespace ABM
             }
 
             if (np != null)
+            {
                 np.OriginProductID = source.ID;
+
+                np.Contributors = new List<int>();
+                np.Contributors = source.Contributors;
+            }
 
             return np;
         }
@@ -681,6 +737,8 @@ namespace ABM
                     {
                         if (!ContainsProduct(P, A))
                         {
+                            P.Contributors.Add(A.ID);//add agent to contributors..
+
                             A.Products.Add(P);
                             var label = from r in ((StackPanel)A.Content).Children.OfType<Label>() where r.Name == "ProductLabel" select r; //lol
                             label.Take(1).ToList()[0].Content = "P: " + A.Products.Count;
@@ -709,6 +767,7 @@ namespace ABM
             CompileConvergentSeries();
             CompileValueVsCountSeries();
             CompileSolvedProductSeries();
+            CompileAverageContributorsSeries();
 
         }
 
@@ -807,6 +866,10 @@ namespace ABM
             SolvedSeriesItems = new List<DataPoint>();
             SolvedProductsPlot.Series.Clear();
             SolvedProductsPlot.InvalidatePlot();
+
+            
+            AverageContrib.Series.Clear();
+            AverageContrib.InvalidatePlot();
 
             CurrentIteration = 0;
             RepopAgents();

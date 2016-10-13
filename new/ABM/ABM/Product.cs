@@ -19,14 +19,16 @@ namespace ABM
         public int OriginAgent;
         public String NameOfOriginAgent;
 
-        public int[] Contributors;
+        public List<int> Contributors;
 
         public Product(int _l, int _id)
         {
             // TODO: Complete member initialization
             License = _l;
             Value = 500;
-            ID = _id;   
+            ID = _id;
+
+            Contributors = new List<int>();
         }
     }
 }
